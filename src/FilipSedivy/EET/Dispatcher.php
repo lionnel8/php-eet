@@ -7,6 +7,7 @@ use FilipSedivy\EET\Exceptions;
 use FilipSedivy\EET\Utils\Debugger;
 use FilipSedivy\EET\Utils\Format;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
+use stdClass;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -44,6 +45,11 @@ class Dispatcher
 
     /** @var array Curl options */
     private $curlOptions = [];
+
+    /**
+     * @var stdClass
+     */
+    private $wholeResponse;
 
     public function __construct(Certificate $certificate, string $service = self::PRODUCTION_SERVICE, bool $validate = true)
     {
@@ -154,6 +160,7 @@ class Dispatcher
 
         try {
             $response = $this->processData($receipt, $check);
+            $this->wholeResponse = $response;
         } catch (Exceptions\SoapClient\CurlException $exception) {
             throw new Exceptions\EET\ClientException($receipt, $this->pkp, $this->bkp, $exception);
         }
@@ -237,6 +244,13 @@ class Dispatcher
         $this->curlOptions[$option] = $value;
 
         return $this;
+    }
+
+    /**
+     * @return stdClass
+     */
+    public function getWholeResponse() {
+        return $this->wholeResponse;
     }
 
     private function checkRequirements(): void
